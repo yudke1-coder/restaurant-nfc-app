@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>תפריט מסעדה - NFC</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --primary: #e63946; --bg: #f8f9fa; --card: #ffffff; --text: #1d3557; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; padding-bottom: 90px; }
+    header { text-align: center; margin-bottom: 20px; }
+    .table-badge { background: var(--primary); color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; display: inline-block; }
+    .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+    .card-info { flex: 1; }
+    .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
+    .card-desc { font-size: 0.85rem; color: #6c757d; margin-bottom: 8px; }
+    .card-price { font-weight: bold; color: var(--primary); }
+    .btn { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍽️ תפריט המסעדה</h1>
+    <div class="table-badge" id="table-display">שולחן: לא מוגדר</div>
+  </header>
+
+  <div id="menu-container">טוען תפריט...</div>
+
+  <div class="cart-bar">
+    <div>
+      <div>סה"כ לתשלום:</div>
+      <strong id="total-price">₪0.00</strong>
+    </div>
+    <button class="btn" onclick="sendOrder()">אישור והזמנה 🚀</button>
+  </div>
+
+  <script>
+    // הוסף כאן את המפתחות מ-Supabase בסעיף הבא
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const supabase = supabase.createClient(https://jskmwxatzzcslegknheh.supabase.co/rest/v1/, sb_publishable_7TxU2lqGDQn6kHYZuoFD6g_fUCJulmG);
+
+    let cart = [];
+    let currentTable = new URLSearchParams(window.location.search).get('table') || 1;
+    document.getElementById('table-display').innerText = `שולחן: ${currentTable}`;
+
+    async function loadMenu() {
+      const { data: items, error } = await supabase.from('menu_items').select('*');
+      const container = document.getElementById('menu-container');
+      if (error) { container.innerHTML = 'שגיאה בטעינת תפריט'; return; }
+      
+      container.innerHTML = items.map(item => `
+        <div class="card">
+          <div class="card-info">
+            <div class="card-title">${item.name_he}</div>
+            <div class="card-desc">${item.description_he || ''}</div>
+            <div class="card-price">₪${item.price}</div>
+          </div>
+          <button class="btn" onclick="addToCart('${item.name_he}', ${item.price})">+ הוסף</button>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      updateCart();
+    }
+
+    function updateCart() {
+      const total = cart.reduce((sum, i) => sum + i.price, 0);
+      document.getElementById('total-price').innerText = `₪${total.toFixed(2)}`;
+    }
+
+    async function sendOrder() {
+      if (cart.length === 0) return alert('הסל ריק!');
+      const total = cart.reduce((sum, i) => sum + i.price, 0);
+      
+      const { error } = await supabase.from('orders').insert([
+        { table_number: parseInt(currentTable), items: cart, total_price: total }
+      ]);
+
+      if (!error) {
+        alert('ההזמנה נשלחה בהצלחה למטבח!');
+        cart = [];
+        updateCart();
+      } else {
+        alert('שגיאה בשליחת ההזמנה');
+      }
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>
