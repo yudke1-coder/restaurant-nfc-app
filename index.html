@@ -38,9 +38,9 @@
 
   <script>
     // הוסף כאן את המפתחות מ-Supabase בסעיף הבא
-    const SUPABASE_URL = "YOUR_SUPABASE_URL";
-    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
-    const supabase = supabase.createClient(https://jskmwxatzzcslegknheh.supabase.co/rest/v1/, sb_publishable_7TxU2lqGDQn6kHYZuoFD6g_fUCJulmG);
+    const SUPABASE_URL = "https://jskmwxatzzcslegknheh.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_7TxU2lqGDQn6kHYZuoFD6g_fUCJulmG";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let cart = [];
     let currentTable = new URLSearchParams(window.location.search).get('table') || 1;
