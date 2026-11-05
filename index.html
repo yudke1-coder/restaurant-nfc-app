@@ -37,19 +37,24 @@
   </div>
 
   <script>
-    // הוסף כאן את המפתחות מ-Supabase בסעיף הבא
     const SUPABASE_URL = "https://jskmwxatzzcslegknheh.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impza213eGF0enpjc2xlZ2tuaGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4NTc0NjksImV4cCI6MjEwOTQzMzQ2OX0.JuVHwB70gFqd4tpAav4yDXS7JkBaOhA-4sEv40wqmTE";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impza213eGF0enpjc2xlZ2tuaGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzg0MjQsImV4cCI6MjA1NjzgNDQyNH0.ey-85Xv0F1zW-E0zW9xX0Z-"; // המפתח שלך מתמונה 3
+    
+    // יצירת חיבור תקין
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let cart = [];
     let currentTable = new URLSearchParams(window.location.search).get('table') || 1;
     document.getElementById('table-display').innerText = `שולחן: ${currentTable}`;
 
     async function loadMenu() {
-      const { data: items, error } = await supabase.from('menu_items').select('*');
+      const { data: items, error } = await supabaseClient.from('menu_items').select('*');
       const container = document.getElementById('menu-container');
-      if (error) { container.innerHTML = 'שגיאה בטעינת תפריט'; return; }
+      if (error) { 
+        console.error(error);
+        container.innerHTML = 'שגיאה בטעינת תפריט'; 
+        return; 
+      }
       
       container.innerHTML = items.map(item => `
         <div class="card">
@@ -77,7 +82,7 @@
       if (cart.length === 0) return alert('הסל ריק!');
       const total = cart.reduce((sum, i) => sum + i.price, 0);
       
-      const { error } = await supabase.from('orders').insert([
+      const { error } = await supabaseClient.from('orders').insert([
         { table_number: parseInt(currentTable), items: cart, total_price: total }
       ]);
 
